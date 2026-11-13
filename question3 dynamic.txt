@@ -1,0 +1,307 @@
+QUESTION 3 - DYNAMIC MEMORY ALLOCATION
+=======================================
+
+This program demonstrates four memory-allocation tasks:
+1. Dynamic one-dimensional array.
+2. Two-dimensional array in one contiguous block.
+3. Two-dimensional array with separately allocated rows.
+4. Dynamic array of structures.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct
+{
+    int roll;
+    char name[40];
+    float marks;
+} Student;
+
+void oneDimensionalArray()
+{
+    int *arr;
+    int n, i, sum = 0;
+
+    printf("\nHow many integers do you want to store? ");
+    scanf("%d", &n);
+
+    if (n <= 0)
+    {
+        printf("Invalid size.\n");
+        return;
+    }
+
+    arr = (int *)malloc(n * sizeof(int));
+
+    if (arr == NULL)
+    {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        printf("Enter element %d: ", i + 1);
+        scanf("%d", &arr[i]);
+        sum = sum + arr[i];
+    }
+
+    printf("Array elements: ");
+    for (i = 0; i < n; i++)
+        printf("%d ", arr[i]);
+
+    printf("\nSum = %d\n", sum);
+
+    free(arr);
+    arr = NULL;
+}
+
+void contiguousMatrix()
+{
+    int *data;
+    int **matrix;
+    int rows, cols, i, j;
+
+    printf("\nEnter number of rows and columns: ");
+    scanf("%d%d", &rows, &cols);
+
+    if (rows <= 0 || cols <= 0)
+    {
+        printf("Invalid matrix size.\n");
+        return;
+    }
+
+    /* One block stores all matrix values continuously. */
+    data = (int *)malloc(rows * cols * sizeof(int));
+
+    /* Row pointers make it possible to use matrix[i][j]. */
+    matrix = (int **)malloc(rows * sizeof(int *));
+
+    if (data == NULL || matrix == NULL)
+    {
+        printf("Memory allocation failed.\n");
+        free(data);
+        free(matrix);
+        return;
+    }
+
+    for (i = 0; i < rows; i++)
+        matrix[i] = data + i * cols;
+
+    printf("Enter matrix elements:\n");
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+            scanf("%d", &matrix[i][j]);
+    }
+
+    printf("Matrix:\n");
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+            printf("%d ", matrix[i][j]);
+
+        printf("\n");
+    }
+
+    free(matrix);
+    free(data);
+}
+
+void nonContiguousMatrix()
+{
+    int **matrix;
+    int *rowSize;
+    int rows, i, j;
+
+    printf("\nEnter number of rows: ");
+    scanf("%d", &rows);
+
+    if (rows <= 0)
+    {
+        printf("Invalid number of rows.\n");
+        return;
+    }
+
+    matrix = (int **)malloc(rows * sizeof(int *));
+    rowSize = (int *)malloc(rows * sizeof(int));
+
+    if (matrix == NULL || rowSize == NULL)
+    {
+        printf("Memory allocation failed.\n");
+        free(matrix);
+        free(rowSize);
+        return;
+    }
+
+    /* Each row can have a different number of columns. */
+    for (i = 0; i < rows; i++)
+    {
+        printf("How many elements in row %d? ", i + 1);
+        scanf("%d", &rowSize[i]);
+
+        if (rowSize[i] <= 0)
+        {
+            printf("Invalid row size.\n");
+
+            for (j = 0; j < i; j++)
+                free(matrix[j]);
+
+            free(matrix);
+            free(rowSize);
+            return;
+        }
+
+        matrix[i] = (int *)malloc(rowSize[i] * sizeof(int));
+
+        if (matrix[i] == NULL)
+        {
+            printf("Memory allocation failed.\n");
+
+            for (j = 0; j < i; j++)
+                free(matrix[j]);
+
+            free(matrix);
+            free(rowSize);
+            return;
+        }
+    }
+
+    printf("Enter the values row by row:\n");
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < rowSize[i]; j++)
+        {
+            printf("Row %d, element %d: ", i + 1, j + 1);
+            scanf("%d", &matrix[i][j]);
+        }
+    }
+
+    printf("\nYour rows are:\n");
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < rowSize[i]; j++)
+            printf("%d ", matrix[i][j]);
+
+        printf("\n");
+    }
+
+    /* Every row was allocated separately, so free every row. */
+    for (i = 0; i < rows; i++)
+        free(matrix[i]);
+
+    free(matrix);
+    free(rowSize);
+}
+
+void dynamicStructureArray()
+{
+    Student *ptr;
+    int n, i;
+
+    printf("\nHow many students? ");
+    scanf("%d", &n);
+
+    if (n <= 0)
+    {
+        printf("Invalid number of students.\n");
+        return;
+    }
+
+    ptr = (Student *)malloc(n * sizeof(Student));
+
+    if (ptr == NULL)
+    {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        printf("\nStudent %d\n", i + 1);
+
+        printf("Roll number: ");
+        scanf("%d", &ptr[i].roll);
+
+        printf("Name (one word): ");
+        scanf("%39s", ptr[i].name);
+
+        printf("Marks: ");
+        scanf("%f", &ptr[i].marks);
+    }
+
+    printf("\nStudent records:\n");
+    for (i = 0; i < n; i++)
+    {
+        printf("\nRoll number: %d\n", ptr[i].roll);
+        printf("Name: %s\n", ptr[i].name);
+        printf("Marks: %.2f\n", ptr[i].marks);
+    }
+
+    free(ptr);
+    ptr = NULL;
+}
+
+int main()
+{
+    int choice;
+
+    do
+    {
+        printf("\n======= DYNAMIC MEMORY MENU =======\n");
+        printf("1. One-dimensional array\n");
+        printf("2. Contiguous two-dimensional array\n");
+        printf("3. Non-contiguous rows with different sizes\n");
+        printf("4. Dynamic array of structures\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+                oneDimensionalArray();
+                break;
+
+            case 2:
+                contiguousMatrix();
+                break;
+
+            case 3:
+                nonContiguousMatrix();
+                break;
+
+            case 4:
+                dynamicStructureArray();
+                break;
+
+            case 5:
+                printf("Program ended.\n");
+                break;
+
+            default:
+                printf("Invalid choice.\n");
+        }
+
+    } while (choice != 5);
+
+    return 0;
+}
+
+
+HOW TO COMPILE
+--------------
+gcc question3_dynamic_memory.c -o question3
+./question3
+
+
+IMPORTANT MEMORY RULES
+----------------------
+- malloc() reserves memory while the program is running.
+- Always check whether malloc() returned NULL.
+- free() releases memory that was allocated using malloc().
+- For a separately allocated 2D array, free each row first, then free
+  the array of row pointers.
+- For the contiguous matrix above, free the row-pointer array and then
+  free the single data block.

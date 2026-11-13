@@ -1,0 +1,166 @@
+QUESTION 2 - EMPLOYEE DETAILS USING STRUCTURES
+===============================================
+
+/*
+   Store employee details and calculate salary and service
+   information. The service of each employee is calculated
+   through a separate function.
+*/
+
+#include <stdio.h>
+
+#define MAX 100
+
+typedef struct
+{
+    int empid;
+    char name[50];
+    float salary;
+    int joiningYear;
+} Employee;
+
+int calculateService(int joiningYear, int currentYear)
+{
+    return currentYear - joiningYear;
+}
+
+void readEmployees(Employee emp[], int n)
+{
+    int i;
+
+    for (i = 0; i < n; i++)
+    {
+        printf("\nEnter details of employee %d\n", i + 1);
+
+        printf("Employee ID: ");
+        scanf("%d", &emp[i].empid);
+
+        printf("Name (one word): ");
+        scanf("%49s", emp[i].name);
+
+        printf("Salary: ");
+        scanf("%f", &emp[i].salary);
+
+        printf("Joining year: ");
+        scanf("%d", &emp[i].joiningYear);
+    }
+}
+
+void showEmployeeDetails(Employee emp[], int n, int currentYear)
+{
+    int i, service;
+
+    printf("\n----------- EMPLOYEE DETAILS -----------\n");
+
+    for (i = 0; i < n; i++)
+    {
+        service = calculateService(emp[i].joiningYear, currentYear);
+
+        printf("\nEmployee ID : %d\n", emp[i].empid);
+        printf("Name       : %s\n", emp[i].name);
+        printf("Salary     : %.2f\n", emp[i].salary);
+        printf("Joining yr : %d\n", emp[i].joiningYear);
+        printf("Service    : %d year(s)\n", service);
+    }
+}
+
+void salaryStatistics(Employee emp[], int n)
+{
+    int i, maxIndex = 0, minIndex = 0;
+    float total = 0, average;
+
+    if (n <= 0)
+        return;
+
+    for (i = 0; i < n; i++)
+    {
+        total = total + emp[i].salary;
+
+        if (emp[i].salary > emp[maxIndex].salary)
+            maxIndex = i;
+
+        if (emp[i].salary < emp[minIndex].salary)
+            minIndex = i;
+    }
+
+    average = total / n;
+
+    printf("\n----------- SALARY SUMMARY -----------\n");
+    printf("Total salary   = %.2f\n", total);
+    printf("Average salary = %.2f\n", average);
+
+    printf("Highest salary = %.2f (Employee: %s)\n",
+           emp[maxIndex].salary, emp[maxIndex].name);
+
+    printf("Lowest salary  = %.2f (Employee: %s)\n",
+           emp[minIndex].salary, emp[minIndex].name);
+}
+
+void serviceStatistics(Employee emp[], int n, int currentYear)
+{
+    int i, service;
+    int maxService, minService;
+    int maxIndex = 0, minIndex = 0;
+
+    if (n <= 0)
+        return;
+
+    maxService = calculateService(emp[0].joiningYear, currentYear);
+    minService = maxService;
+
+    for (i = 1; i < n; i++)
+    {
+        service = calculateService(emp[i].joiningYear, currentYear);
+
+        if (service > maxService)
+        {
+            maxService = service;
+            maxIndex = i;
+        }
+
+        if (service < minService)
+        {
+            minService = service;
+            minIndex = i;
+        }
+    }
+
+    printf("\n----------- SERVICE SUMMARY -----------\n");
+    printf("Longest service: %d year(s) - %s\n",
+           maxService, emp[maxIndex].name);
+
+    printf("Shortest service: %d year(s) - %s\n",
+           minService, emp[minIndex].name);
+}
+
+int main()
+{
+    Employee emp[MAX];
+    int n, currentYear;
+
+    printf("Enter the number of employees: ");
+    scanf("%d", &n);
+
+    if (n <= 0 || n > MAX)
+    {
+        printf("Invalid number of employees.\n");
+        return 1;
+    }
+
+    printf("Enter the current year: ");
+    scanf("%d", &currentYear);
+
+    readEmployees(emp, n);
+
+    showEmployeeDetails(emp, n, currentYear);
+    salaryStatistics(emp, n);
+    serviceStatistics(emp, n, currentYear);
+
+    return 0;
+}
+
+
+HOW TO COMPILE
+--------------
+gcc question2_employee.c -o question2
+./question2
